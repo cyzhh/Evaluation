@@ -10,6 +10,16 @@ def load_data(data_name, split, data_dir="./data"):
     data_file = f"{data_dir}/{data_name}/{split}.jsonl"
     if os.path.exists(data_file):
         examples = list(load_jsonl(data_file))
+    elif data_name == "chemical_literature_QA_1000" or data_name == "chemical_literature_QA":
+        examples = list(load_jsonl(f"/home/cyz/chem/githubs/Qwen2.5-Math/evaluation/data/SciKnowEval/L1/{data_name}/{split}.jsonl"))
+    elif data_name in ["reaction_mechanism_inference","chemical_reasoning_and_interpretation"]:
+        examples = list(load_jsonl(f"/home/cyz/chem/githubs/Qwen2.5-Math/evaluation/data/SciKnowEval/L2/{data_name}/{split}.jsonl"))
+    elif data_name == "balancing_chemical_equation" or data_name == "chemical_calculation" or data_name ==  "chem_500mc":
+        examples = list(load_jsonl(f"/home/cyz/chem/githubs/Qwen2.5-Math/evaluation/data/SciKnowEval/L3/{data_name}/{split}.jsonl"))
+    elif data_name == "chemical_procedure_generation" or data_name == "chemical_reagent_generation":
+        examples = list(load_jsonl(f"/home/cyz/chem/githubs/Qwen2.5-Math/evaluation/data/SciKnowEval/L5/{data_name}/{split}.jsonl"))
+    elif data_name in ["math_500", "patent", "patent_formal"]:
+        examples = list(load_jsonl(f"/home/cyz/chem/githubs/Qwen2.5-Math/evaluation/data/{data_name}/{split}.jsonl"))
     else:
         if data_name == "math":
             dataset = load_dataset(
@@ -69,7 +79,6 @@ def load_data(data_name, split, data_dir="./data"):
             dataset = load_jsonl(f"{data_dir}/carp_en/test.jsonl")
         else:
             raise NotImplementedError(data_name)
-
         examples = list(dataset)
         examples = [lower_keys(example) for example in examples]
         dataset = Dataset.from_list(examples)
@@ -82,4 +91,6 @@ def load_data(data_name, split, data_dir="./data"):
 
     # dedepulicate & sort
     examples = sorted(examples, key=lambda x: x["idx"])
+    print("**"*50)
+    print(examples[0])
     return examples

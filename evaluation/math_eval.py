@@ -61,6 +61,8 @@ def parse_args():
 def prepare_data(data_name, args):
     examples = load_data(data_name, args.split, args.data_dir)
 
+    print(f"Loaded {len(examples)} examples from {data_name} {args.split} set.")
+    
     # sample `num_test_sample` from dataset
     if args.num_test_sample > 0:
         # examples = random.sample(examples, min(args.num_test_sample, len(examples)))
@@ -231,24 +233,32 @@ def main(llm, tokenizer, data_name, args):
 
     max_func_call = 1 if args.prompt_type in ["cot", "pal"] else 4
 
-    stop_words = ["</s>", "<|im_end|>", "<|endoftext|>"]
+    stop_words = ["</s>"]
 
     if args.prompt_type in ["cot"]:
         stop_words.append("\n\nQuestion:")
-    if args.prompt_type in ["pal", "tool-integrated", "jiuzhang_tora"]:
-        stop_words.extend(["\n\n---", "```output"])
+    if args.prompt_type in ["pal", "tool-integrated", "jiuzhang_tora", "deepseek", "tora", "cyz", "jiuzhang_cyz"]:
+        # stop_words.extend(["\n\n---", "```output","---"])
+        stop_words.extend(["```output","---"])
+    elif args.prompt_type in ["deepseek-math", "deepseek-r1"]:
+        stop_words.extend(["<｜end▁of▁sentence｜>"])
     elif args.prompt_type in ["wizard_zs", "platypus_fs"]:
         stop_words.extend(["Instruction", "Response"])
-    elif "jiuzhang" in args.prompt_type:
-        stop_words.append("\n\n## Question")
+    elif args.prompt_type in ["jiuzhang", "llama3-boxed", "llama3_long_thought"]:
+        stop_words.extend(["Question:", "<|end_of_text|>","<|eom_id|>","```output","---"])
+    elif "qwen" in args.prompt_type:
+        stop_words.extend(["<|im_end|>", "<|endoftext|>"])
     elif "numina" in args.prompt_type:
         stop_words.append("\n### Problem")
     elif "pure" in args.prompt_type:
         stop_words.append("\n\n\n")
 
+    print(stop_words)
+
     # start inference
     # measure time use
     start_time = time.time()
+    print(max_func_call)
     for epoch in range(max_func_call):
         print("-" * 20, "Epoch", epoch)
         current_prompts = remain_prompts
@@ -266,11 +276,11 @@ def main(llm, tokenizer, data_name, args):
                     max_tokens=args.max_tokens_per_call,
                     n=1,
                     stop=stop_words,
-                    stop_token_ids=(
-                        [151645, 151643]
-                        if "qwen2" in args.model_name_or_path.lower()
-                        else None
-                    ),
+                    # stop_token_ids=(
+                    #     [151645, 151643]
+                    #     if "qwen2" in args.model_name_or_path.lower()
+                    #     else None
+                    # ),
                 ),
             )
 
@@ -315,6 +325,10 @@ def main(llm, tokenizer, data_name, args):
         for k in range(len(remain_prompts)):
             i, query = remain_prompts[k]
             res, report = remain_results[k]
+            if len(res) > 100:
+                res = res[:50] + "..." + res[-50:]
+            if len(report) > 100:
+                report = report[:50] + "..." + report[-50:]
             exec_result = res if res else report
             if "pal" in args.prompt_type:
                 exec_result = "\\boxed{" + exec_result + "}"
@@ -334,24 +348,45 @@ def main(llm, tokenizer, data_name, args):
     # remove input_prompt from end_prompt
     codes = []
     assert len(input_prompts) == len(end_prompts)
-    for i in range(len(input_prompts)):
-        _, end_prompt = end_prompts[i]
-        code = end_prompt.split(input_prompts[i])[-1].strip()
-        for stop_word in stop_words:
-            if stop_word in code:
-                code = code.split(stop_word)[0].strip()
-        codes.append(code)
+    # for i in range(len(input_prompts)):
+    #     _, end_prompt = end_prompts[i]
+    #     code = end_prompt.split(input_prompts[i])[-1].strip()
+    #     for stop_word in stop_words:
+    #         if stop_word in code:
+    #             code = code.split(stop_word)[0].strip()
+    #     codes.append(code)
 
+    # ans_split = "assistant\n"
+    if args.prompt_type == "jiuzhang-cyz" or args.prompt_type == "jiuzhang":
+        ans_split = "Question:"
+    elif args.prompt_type == "deepseek-math" or args.prompt_type == "deepseek" or args.prompt_type == "deepseek-r1":
+        ans_split = "Assistant:"
+    elif args.prompt_type == "tora" or args.prompt_type == "SciKnowEval_MCQ_Llama_fix" or args.prompt_type == "SciKnowEval_MCQ_Llama_fix2":
+        ans_split = "<|assistant|>"
+    elif args.prompt_type == "tool-integrated":
+        ans_split = "Question:"
+    else:
+        ans_split = "assistant"
+    
+    if args.prompt_type == "SciKnowEval_MCQ_Llama_fix2":
+        codes = [prompt[:-7].split(ans_split)[-1].strip() for _, prompt in end_prompts]
+    else:
+        codes = [prompt.split(ans_split)[-1].strip() for _, prompt in end_prompts]
+    fulls = [prompt for _, prompt in end_prompts]
+    
     # extract preds
     results = [
         run_execute(executor, code, args.prompt_type, data_name) for code in codes
     ]
     time_use = time.time() - start_time
-
+    
+    print(results[0])
+    
     # put results back to examples
     all_samples = []
     for i, sample in enumerate(samples):
         code = codes[i * args.n_sampling : (i + 1) * args.n_sampling]
+        full = fulls[i * args.n_sampling : (i + 1) * args.n_sampling]
         result = results[i * args.n_sampling : (i + 1) * args.n_sampling]
         preds = [item[0] for item in result]
         reports = [item[1] for item in result]
@@ -371,7 +406,7 @@ def main(llm, tokenizer, data_name, args):
                 )
 
         sample.pop("prompt")
-        sample.update({"code": code, "pred": preds, "report": reports})
+        sample.update({"code": code, "pred": preds, "report": reports, "full": full})
         all_samples.append(sample)
 
     # add processed samples

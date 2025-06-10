@@ -237,6 +237,12 @@ def strip_string(string, skip_unit=False):
         .replace("\\geq", "\\ge")
     )
 
+    string = string.replace("\\rightarrow", "=")
+    string = string.replace("\\cdot", "=")
+    string = string.replace("\u2192", "=")
+    string = string.replace("_", "")
+    string = string.replace("^-", "")
+    string = string.replace("^+", "")
     # remove \left and \right
     string = string.replace("\\left", "")
     string = string.replace("\\right", "")
@@ -528,12 +534,19 @@ def extract_answer(pred_str, data_name, use_last_number=True):
             a = ans.split("$")[0].strip()
         pred = a
     elif "he answer is" in pred_str:
-        pred = pred_str.split("he answer is")[-1].strip()
+        try:
+            pred = pred_str.split("he answer is")[-1].replace("\n\n").strip()
+        except:
+            pred = pred_str
     elif "final answer is" in pred_str:
         pred = pred_str.split("final answer is")[-1].strip()
     elif "答案是" in pred_str:
         # Handle Chinese few-shot multiple choice problem answer extraction
         pred = pred_str.split("答案是")[1].strip().split("\n\n")[0].strip()
+    elif "\\[" in pred_str:
+        pred = pred_str.split("\\[")[-1].split("\\]")[0]
+    elif "the balanced chemical equation is:\n\n" in pred_str:
+        pred = pred_str.split("final answer is")[-1].strip()
     else:  # use the last number
         if use_last_number:
             pattern = "-?\d*\.?\d+"
@@ -583,7 +596,7 @@ def parse_ground_truth(example: Dict[str, Any], data_name):
         return example["gt_cot"], gt_ans
 
     # parse ground truth
-    if data_name in ["math", "minerva_math"]:
+    if data_name in ["math", "minerva_math", "math_500"]:
         gt_cot = example["solution"]
         gt_ans = extract_answer(gt_cot, data_name)
     elif data_name == "gsm8k":
@@ -636,6 +649,16 @@ def parse_ground_truth(example: Dict[str, Any], data_name):
         "imo2024",
     ]:
         gt_cot, gt_ans = None, example["answer"]
+    elif data_name in ["chemical_literature_QA_1000", "chemical_calculation", "reaction_mechanism_inference", "chemical_reasoning_and_interpretation","chem_500mc","chemical_literature_QA"]:
+        gt_cot, gt_ans = None, example["answerKey"]
+    elif data_name in ["balancing_chemical_equation"]:
+        gt_cot, gt_ans = None, example["answer"]
+    elif data_name in ["chemical_procedure_generation", "chemical_reagent_generation"]:
+        gt_cot, gt_ans = None, example["answer"]
+    elif data_name in ["patent"]:
+        gt_cot, gt_ans = None, example["response"]
+    elif data_name in ["patent_formal"]:
+        gt_cot, gt_ans = None, example["result"]
     else:
         raise NotImplementedError(f"`{data_name}`")
     # post process

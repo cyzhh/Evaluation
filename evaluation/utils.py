@@ -162,7 +162,69 @@ PROMPT_TEMPLATES = {
         "\n\n",
     ),
     "numina": ("### Problem: {input}\n### Solution:", " {output}", "\n\n"),
+    "SciKnowEval_MCQ": (
+        "<|im_start|>system\nYou are a helpful assistant.<|im_end|>\n"
+        "<|im_start|>user\n{input}\nGiven a question and four options, please select the right answer. Please reason step by step, Your answer should be \"A\", \"B\", \"C\" or \"D\", and put your final answer within \\boxed{{}}.<|im_end|>\n"
+        "<|im_start|>assistant\n",
+        "{output}",
+        "\n\n"
+    ),
+    "SciKnowEval_filling": (
+        "<|im_start|>system\nYou are a helpful assistant.<|im_end|>\n"
+        "<|im_start|>user\n{input}\nPlease reason step by step, and put your final answer within \\boxed{{}}.<|im_end|>\n"
+        "<|im_start|>assistant\n",
+        "{output}",
+        "\n\n"
+    ),
+    "SciKnowEval_open": (
+        "<|im_start|>system\nYou are an excellent expert in experimental protocol design. Given a user requirement for the experiment, and the materials that may be required, your task is to design the procedure of the experiment. Do not output any other characters.<|im_end|>\n"
+        "<|im_start|>user\n{input}\nPlease reason step by step.<|im_end|>\n"
+        "<|im_start|>assistant\n",
+        "{output}",
+        "\n\n"
+    ),
+    "SciKnowEval_filling_Llama": (
+        "<|user|>\n{input}\nPlease reason step by step, and put your final answer within \\boxed{{}}.\n"
+        "<|assistant|>\n",
+        "{output}",
+        "\n\n"
+    ),
+    "SciKnowEval_MCQ_Llama": (
+        "<|user|>\n{input}\nGiven a question and four options, please select the right answer. Please reason step by step, Your answer should be \"A\", \"B\", \"C\" or \"D\", and put your final answer within \\boxed{{}}."
+        "<|assistant|>\n",
+        "{output}",
+        "\n\n"
+    ),
+    "SciKnowEval_filling_r1": (
+        "<|im_start|>system\nYour role as an assistant involves thoroughly exploring questions through a systematic long thinking process before providing the final precise and accurate solutions. This requires engaging in a comprehensive cycle of analysis, summarizing, exploration, reassessment, reflection, backtracing, and iteration to develop well-considered thinking process.Please structure your response into two main sections: Thought and Solution.\n\nIn the Thought section, detail your reasoning process using the specified format:\n\n```\n<|begin_of_thought|>\n{{thought with steps seperated with \"\n\n\"}}\n<|end_of_thought|>\n```\n\nEach step should include detailed considerations such as analisying questions, summarizing relevant findings, brainstorming new ideas, verifying the accuracy of the current steps, refining any errors, and revisiting previous steps. Try to use casual, genuine phrases like: \"Hmm...\", \"This is interesting because...\", \"Wait, let me think about...\", \"Actually...\", \"Now that I look at it...\", \"This reminds me of...\", \"I wonder if...\", \"But then again...\", \"Let's see if...\", \"Alternatively...\", \"Let's summaize existing information...\", \"This might mean that...\", \"why/how/when/where...\", etc, to make your thought process be coherent, clear, and logically sound, effectively simulating human cognitive processes.\n\nIn the Solution section, based on various attempts, explorations, and reflections from the Thought section, systematically present the final solution that you deem correct. The solution should remain a logical, accurate, concise expression style and detail necessary step needed to reach the conclusion, formatted as follows:\n\n```\n<|begin_of_solution|>\n{{final formatted, precise, and clear solution}}\n<|end_of_solution|>\n```\n\nNow, try to solve the following question through the above guidlines:\n<|im_end|>\n"
+        "<|im_start|>user\n{input}\nGiven a question and four options, please select the right answer. Please reason step by step, Your answer should be \"A\", \"B\", \"C\" or \"D\", and put your final answer within \\boxed{{}}.<|im_end|>\n",
+        "<|im_start|>assistant\n",
+        "{output}",
+        "\n\n"
+    ),
+    "Bespoke-Stratos": (
+        "<|im_start|>system\nYour role as an assistant involves thoroughly exploring questions through a systematic long thinking process before providing the final precise and accurate solutions. This requires engaging in a comprehensive cycle of analysis, summarizing, exploration, reassessment, reflection, backtracing, and iteration to develop well-considered thinking process. Please structure your response into two main sections: Thought and Solution. In the Thought section, detail your reasoning process using the specified format: <|begin_of_thought|> {{thought with steps separated with '\n\n'}} <|end_of_thought|> Each step should include detailed considerations such as analisying questions, summarizing relevant findings, brainstorming new ideas, verifying the accuracy of the current steps, refining any errors, and revisiting previous steps. In the Solution section, based on various attempts, explorations, and reflections from the Thought section, systematically present the final solution that you deem correct. The solution should remain a logical, accurate, concise expression style and detail necessary step needed to reach the conclusion, formatted as follows: <|begin_of_solution|> {{final formatted, precise, and clear solution}} <|end_of_solution|> Now, try to solve the following question through the above guidelines:\n<|im_end|>\n"
+        "<|im_start|>user\nReturn your final response within \\boxed{{}}. {input}<|im_end|>\n",
+        "<|im_start|>assistant\n",
+        "{output}",
+        "\n\n"
+    ),
+    "qwen-patent-formal": (
+        "<|im_start|>system\nYou are a helpful assistant.<|im_end|>\n"
+        "<|im_start|>user\nPlease generate the experimental steps in formal language according to the experimental requirements. The parameters need to include the amount of substance, the state of the reaction, etc. \n\nExample:\nInput:\nHow to prepare 2-Ethyl-1,5-dimethoxy-3-trifluoromethyl-benzene?\n\nOutput:\nStep 1: Add(solute: \"2 - ethyl - 1,5 - dimethoxy - 3 - trifluoromethyl - benzaldehyde\", solute_amount: \"1.0 g\", solute_substance_amount: \"4.0 mmol\", solvent: \"THF\", solvent_volume: \"10 mL\", additive: \"NaBH4\", additive_amount: \"0.3 g\", additive_substance_amount: \"8.0 mmol\", temperature: \"0° C\")\nStep 2: Stir(temperature: \"0° C\", duration: \"1 h\")\nStep 3: Add(additive: \"water\", additive_volume: \"10 mL\")\nStep 4: Extract(solvent: \"EtOAc\", extraction_times: \"3\", solvent_volume_per_time: \"10 mL\")\nStep 5: Wash(washing_solvent: \"brine\", washing_solvent_volume: \"10 mL\")\nStep 6: Dry(drying_agent: \"Na2SO4\")\nStep 7: Filter()\nStep 8: Concentrate()\nStep 9: Yield(product: \"2 - Ethyl - 1,5 - dimethoxy - 3 - trifluoromethyl - benzene\", product_amount: \"0.8 g\", yield_percentage: \"90%\", product_state: \"colorless oil\")\n\nThe following are our experimental requirements:\nInput:\n{input}\n\nOutput:\n<|im_end|>\n"
+        "<|im_start|>assistant\n",
+        "{output}",
+        "\n\n",
+    ),
+    "patent-formal": (
+        "<|im_start|>system\nYou are a helpful assistant.<|im_end|>\n"
+        "<|im_start|>user\n{input}\n请你将以下的实验步骤转换成形式化语言，参数需要包含物质的量，反应的状态等。举个例子:Input:\nHeat: the reaction mixture is initially heated to 180° C\n\nOutput:Heat(target_temperature: \"190° C\", duration: \"1 hour\", starting_point: \"180° C\")\n\n如下是需要转换的实验步骤：Input:\n{actions}\n\nOutput:\n<|im_end|>\n",
+        "<|im_start|>assistant\n",
+        "{output}",
+        "\n\n",
+    )
 }
+
 
 
 def construct_prompt(example, data_name, args):
@@ -200,7 +262,14 @@ def construct_prompt(example, data_name, args):
                 for q, a in demos
             ]
         )
-    context = input_template.format(input=example["question"])
+    if args.prompt_type == "patent-formal":
+        actions = ""
+        for action in example["solution"]["reaction_actions"]:
+            actions += "Step " + action + "\n"
+        print(actions)
+        context = input_template.format(input=actions)
+    else:
+        context = input_template.format(input=example["question"])
     if len(demo_prompt) == 0 or (
         args.adapt_few_shot and example["gt_ans"] not in ["A", "B", "C", "D", "E"]
     ):
@@ -237,7 +306,8 @@ Here are some examples you may refer to:
             + full_prompt
         )
 
-    return full_prompt.strip(" ")  # important!
+    # return full_prompt.strip(" ")
+    return full_prompt
 
 
 key_map = {
