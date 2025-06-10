@@ -1,0 +1,38 @@
+{
+  "Qwen2.5-7B-Instruct_qwen-patent-formal": {
+    "score": 43.15084867964069,
+    "metrics": {
+      "precision": 61.51360498061451,
+      "recall": 89.49804832149452,
+      "f1": 69.02550018456661,
+      "avg_gaps": 8.237618809404703
+    }
+  },
+  "patent_2016_v5_formal_20250415_v1_qwen-patent-formal": {
+    "score": 43.00502752864926,
+    "metrics": {
+      "precision": 72.81426854926673,
+      "recall": 81.55951029259302,
+      "f1": 73.45012382558079,
+      "avg_gaps": 6.224112056028014
+    }
+  },
+  "deepseek_v3_qwen-patent-formal": {
+    "score": 15.142971336935853,
+    "metrics": {
+      "precision": 31.680206140174977,
+      "recall": 96.62363455809336,
+      "f1": 40.74962437405774,
+      "avg_gaps": 38.8421052631579
+    }
+  },
+  "deepseek_r1_qwen-patent-formal": {
+    "score": 38.592708240910795,
+    "metrics": {
+      "precision": 53.561650337966114,
+      "recall": 85.93612775837205,
+      "f1": 61.38040804506725,
+      "avg_gaps": 12.473684210526315
+    }
+  }
+}
